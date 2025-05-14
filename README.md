@@ -99,9 +99,13 @@ O repositório GitHub foi estruturado para seguir as melhores práticas de desen
 ## ⚙️ Como Rodar a Solução
 Para rodar o projeto localmente ou em um servidor, siga as instruções abaixo:
 
-1. Clone o repositório:
-   ```bash
-   git clone https://github.com/Amand95/Enterprise-Challenge---Sprint-1-.git
+### 1. Clonar o Repositório
+
+Primeiro, faça o clone do repositório para o seu ambiente local. Abra o terminal e execute o seguinte comando:
+
+```bash
+git clone https://github.com/Amand95/Enterprise-Challenge---Sprint-1-.git
+
 
 
 
