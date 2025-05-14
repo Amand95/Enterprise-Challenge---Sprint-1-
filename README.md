@@ -68,7 +68,11 @@ A arquitetura proposta é composta por vários componentes interconectados que p
 - O uso de sensores e a coleta de dados são simulados, pois o foco nesta fase é na definição da estrutura e não na implementação física.
 
 ## 📎 Diagrama da Arquitetura
-A arquitetura foi desenhada com a ferramenta diagrams.net. Este diagrama ilustra todos os componentes da solução e a interconexão entre eles.
+
+A arquitetura foi desenhada com a ferramenta [diagrams.net](https://app.diagrams.net/).  
+O diagrama a seguir ilustra todos os componentes da solução e a interconexão entre eles:
+
+![Diagrama da Arquitetura](https://github.com/Amand95/Enterprise-Challenge---Sprint-1-/raw/main/diagrama_arquitetura.png)
 
 ## 🔗 Repositório GitHub
 O repositório GitHub foi estruturado para seguir as melhores práticas de desenvolvimento colaborativo. O link para o repositório é privado e foi compartilhado com os tutores para a avaliação.
