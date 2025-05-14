@@ -1,70 +1,113 @@
+# processamento_ml.py
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+import random
+import time
+import paho.mqtt.client as mqtt
+import json
+import datetime
 from sklearn.model_selection import train_test_split
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.preprocessing import StandardScaler
+import joblib
+import matplotlib.pyplot as plt
 
-# Carrega os dados do arquivo CSV
-dados = pd.read_csv('dados_vibracao.csv')
+# Configuração do broker MQTT
+broker = "test.mosquitto.org"
+port = 1883
+topic = "fiap/desafio/vibracao"
 
-# Exibe as primeiras linhas do arquivo para inspecionar os dados
-print(dados.head())
+# Criando cliente MQTT
+client = mqtt.Client()
+client.connect(broker, port)
 
-# Verificando se há dados ausentes
-print("\nVerificando dados ausentes:")
-print(dados.isnull().sum())
+# Função para simular a coleta de dados de vibração
+def coleta_dados():
+    vibracao = round(random.uniform(0.2, 4.5), 2)  # Gera valor aleatório de vibração
+    timestamp = datetime.datetime.now().isoformat()  # Cria um timestamp
+    mensagem = json.dumps({"vibracao": vibracao, "timestamp": timestamp})  # Cria mensagem em JSON
+    return mensagem
 
-# Processamento do dado - Convertendo o timestamp para um formato numérico (ex: timestamp unix)
-dados['timestamp'] = pd.to_datetime(dados['timestamp'])
-dados['timestamp'] = dados['timestamp'].apply(lambda x: x.timestamp())
+# Função para criar um DataFrame simulando coleta de dados
+def simula_dados():
+    dados = []
+    for _ in range(1000):  # Simula 1000 dados
+        mensagem = coleta_dados()
+        dados.append(json.loads(mensagem))
+        time.sleep(0.1)
+    return pd.DataFrame(dados)
 
-# Adiciona uma coluna para a classificação (ex: falha se vibração > 3.0, normal caso contrário)
-dados['classe'] = np.where(dados['vibracao'] > 3.0, 'falha', 'normal')
+# Função de pré-processamento dos dados
+def preprocessamento(dados):
+    dados['timestamp'] = pd.to_datetime(dados['timestamp'])  # Converte para datetime
+    dados['vibracao'] = dados['vibracao'].fillna(dados['vibracao'].mean())  # Preenche valores ausentes com a média
+    dados['falha'] = dados['vibracao'].apply(lambda x: 1 if x > 3.5 else 0)  # Marca como falha (1) ou normal (0)
+    return dados[['vibracao']], dados['falha']  # Retorna as features e o target
 
-# Exibe as primeiras linhas do arquivo após a transformação
-print("\nDados após transformação:")
-print(dados.head())
+# Função para treinar e avaliar o modelo
+def treinar_modelo(X_train, y_train, X_test, y_test):
+    modelo = DecisionTreeClassifier(random_state=42, max_depth=5, min_samples_leaf=4)  # Modelo ajustado
+    modelo.fit(X_train, y_train)  # Treinamento
 
-# Visualizando a distribuição das classes
-dados['classe'].value_counts().plot(kind='bar', title='Distribuição de Classes (Falha vs Normal)')
-plt.xlabel('Classe')
-plt.ylabel('Contagem')
-plt.show()
+    # Previsões
+    y_pred = modelo.predict(X_test)
 
-# Definindo variáveis independentes (X) e dependente (y)
-X = dados[['timestamp', 'vibracao']]
-y = dados['classe']
+    # Avaliação
+    print("Acurácia do modelo:", accuracy_score(y_test, y_pred))
+    print("Relatório de Classificação:\n", classification_report(y_test, y_pred))
+    print("Matriz de Confusão:\n", confusion_matrix(y_test, y_pred))
 
-# Dividindo os dados em treinamento e teste (80% treino, 20% teste)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+    # Salva o modelo treinado
+    joblib.dump(modelo, 'modelo_vibracao.pkl')
+    print("Modelo treinado salvo como 'modelo_vibracao.pkl'.")
 
-# Inicializando o modelo de Árvore de Decisão
-modelo = DecisionTreeClassifier(random_state=42)
+    return modelo
 
-# Treinando o modelo
-modelo.fit(X_train, y_train)
+# Função para visualizar os dados e a importância das variáveis
+def visualizacao(dados, modelo):
+    # Distribuição das classes (falha x normal)
+    dados['falha'].value_counts().plot(kind='bar', title='Distribuição das Classes (Falha x Normal)', color=['green', 'red'])
+    plt.xlabel('Classe')
+    plt.ylabel('Contagem')
+    plt.show()
 
-# Fazendo previsões no conjunto de teste
-y_pred = modelo.predict(X_test)
+    # Importância das variáveis
+    feature_importances = modelo.feature_importances_
+    plt.barh(['vibracao'], feature_importances, color='blue')
+    plt.xlabel('Importância')
+    plt.title('Importância das Variáveis')
+    plt.show()
 
-# Avaliando o modelo
-print("\nAcurácia do Modelo:")
-print(accuracy_score(y_test, y_pred))
+# Função principal para orquestrar todo o fluxo
+def main():
+    # Coleta de dados simulados
+    dados = simula_dados()
 
-print("\nRelatório de Classificação:")
-print(classification_report(y_test, y_pred))
+    # Pré-processamento dos dados
+    X, y = preprocessamento(dados)
 
-print("\nMatriz de Confusão:")
-print(confusion_matrix(y_test, y_pred))
+    # Divisão entre dados de treinamento e teste
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Visualizando a importância das variáveis
-importances = modelo.feature_importances_
-features = X.columns
+    # Normalização dos dados
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
-# Plotando a importância das variáveis
-plt.barh(features, importances)
-plt.title('Importância das Variáveis')
-plt.xlabel('Importância')
-plt.ylabel('Variáveis')
-plt.show()
+    # Treinamento do modelo
+    modelo = treinar_modelo(X_train, y_train, X_test, y_test)
+
+    # Visualização
+    visualizacao(dados, modelo)
+
+    # Envio de dados simulados via MQTT
+    while True:
+        mensagem = coleta_dados()
+        client.publish(topic, mensagem)
+        print(f"Publicado: {mensagem}")
+        time.sleep(5)
+
+# Execução principal
+if __name__ == '__main__':
+    main()
