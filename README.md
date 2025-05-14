@@ -1,4 +1,13 @@
-# Challenge Reply – Prevenção de Falhas em Motores Industriais
+# FIAP - Faculdade de Informática e Administração Paulista
+
+## Nome do Projeto: Challenge Reply – Prevenção de Falhas em Motores Industriais
+
+## Nome do Grupo: Grupo 13
+
+👨‍🎓 **Integrantes**:
+- Amanda da Silva Barros
+- Karina Jesus dos Santos
+- João Victor Cope Moreira
 
 ## 🧠 Justificativa do Problema
 Na Indústria 4.0, falhas inesperadas em motores industriais são uma das principais causas de paradas de produção, resultando em grandes perdas financeiras e operacionais. Muitas falhas, como vibrações anormais, superaquecimento ou desgaste de rolamentos, não são percebidas até que o problema se agrave, levando a manutenções corretivas caras e períodos de inatividade prolongados.
@@ -46,10 +55,10 @@ A arquitetura proposta é composta por vários componentes interconectados que p
 | **Integrante**    | **Responsabilidade**                                                      |
 |-------------------|---------------------------------------------------------------------------|
 | **Amanda**        | Organização geral, documentação e GitHub                                 |
-| **Amanda**  | Simulação da coleta de dados com ESP32 e MQTT                             |
-| **João**  | Processamento dos dados e aplicação do modelo de Machine Learning (ML)     |
-| **Karina**  | Construção do dashboard e alertas inteligentes                            |
-| **João**  | Diagrama da arquitetura e suporte na integração                           |
+| **Amanda**        | Simulação da coleta de dados com ESP32 e MQTT                             |
+| **João**          | Processamento dos dados e aplicação do modelo de Machine Learning (ML)     |
+| **Karina**        | Construção do dashboard e alertas inteligentes                            |
+| **João**          | Diagrama da arquitetura e suporte na integração                           |
 
 ## 📌 Observações
 - Dados simulados foram utilizados nesta fase do projeto.
@@ -84,7 +93,6 @@ Para rodar o projeto localmente ou em um servidor, siga as instruções abaixo:
 1. Clone o repositório:
    ```bash
    git clone https://github.com/Amand95/Enterprise-Challenge---Sprint-1-.git
-
 
 
 
