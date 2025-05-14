@@ -1,113 +1,156 @@
-# processamento_ml.py
-import pandas as pd
-import numpy as np
 import random
 import time
-import paho.mqtt.client as mqtt
 import json
 import datetime
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
-from sklearn.preprocessing import StandardScaler
+import pandas as pd
+import numpy as np
+import paho.mqtt.client as mqtt
 import joblib
 import matplotlib.pyplot as plt
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report, confusion_matrix
 
-# Configuração do broker MQTT
+# Configurações do broker MQTT
 broker = "test.mosquitto.org"
 port = 1883
 topic = "fiap/desafio/vibracao"
 
-# Criando cliente MQTT
+# Inicializa o cliente MQTT
 client = mqtt.Client()
-client.connect(broker, port)
 
-# Função para simular a coleta de dados de vibração
-def coleta_dados():
-    vibracao = round(random.uniform(0.2, 4.5), 2)  # Gera valor aleatório de vibração
-    timestamp = datetime.datetime.now().isoformat()  # Cria um timestamp
-    mensagem = json.dumps({"vibracao": vibracao, "timestamp": timestamp})  # Cria mensagem em JSON
-    return mensagem
+# Callback para conexão
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        print("✅ Conectado ao broker MQTT com sucesso!")
+    else:
+        print(f"❌ Falha na conexão. Código de retorno: {rc}")
+        
+# Callback para publicação
+def on_publish(client, userdata, mid):
+    print(f"📤 Mensagem publicada com sucesso. ID: {mid}")
 
-# Função para criar um DataFrame simulando coleta de dados
-def simula_dados():
-    dados = []
-    for _ in range(1000):  # Simula 1000 dados
-        mensagem = coleta_dados()
-        dados.append(json.loads(mensagem))
-        time.sleep(0.1)
-    return pd.DataFrame(dados)
+# Função para gerar dados simulados
+def gerar_dados():
+    # Gera um valor aleatório de vibração (em mm/s)
+    vibracao = round(random.uniform(0.2, 4.5), 2)
+    timestamp = datetime.datetime.now().isoformat()
+    
+    # Classifica os dados em 'falha' ou 'normal'
+    if vibracao > 3.0:
+        status = 1  # 'Falha'
+    else:
+        status = 0  # 'Normal'
 
-# Função de pré-processamento dos dados
-def preprocessamento(dados):
-    dados['timestamp'] = pd.to_datetime(dados['timestamp'])  # Converte para datetime
-    dados['vibracao'] = dados['vibracao'].fillna(dados['vibracao'].mean())  # Preenche valores ausentes com a média
-    dados['falha'] = dados['vibracao'].apply(lambda x: 1 if x > 3.5 else 0)  # Marca como falha (1) ou normal (0)
-    return dados[['vibracao']], dados['falha']  # Retorna as features e o target
+    # Cria e retorna a mensagem no formato JSON
+    return json.dumps({
+        "vibracao": vibracao,
+        "status": status,
+        "timestamp": timestamp
+    })
 
-# Função para treinar e avaliar o modelo
-def treinar_modelo(X_train, y_train, X_test, y_test):
-    modelo = DecisionTreeClassifier(random_state=42, max_depth=5, min_samples_leaf=4)  # Modelo ajustado
-    modelo.fit(X_train, y_train)  # Treinamento
+# Função para treinar e salvar o modelo de ML
+def treinar_modelo(dados):
+    # Cria DataFrame para os dados de vibração
+    df = pd.DataFrame(dados, columns=['vibracao', 'status'])
 
-    # Previsões
-    y_pred = modelo.predict(X_test)
+    # Separando variáveis independentes e dependentes
+    X = df[['vibracao']]
+    y = df['status']
 
-    # Avaliação
-    print("Acurácia do modelo:", accuracy_score(y_test, y_pred))
-    print("Relatório de Classificação:\n", classification_report(y_test, y_pred))
-    print("Matriz de Confusão:\n", confusion_matrix(y_test, y_pred))
-
-    # Salva o modelo treinado
-    joblib.dump(modelo, 'modelo_vibracao.pkl')
-    print("Modelo treinado salvo como 'modelo_vibracao.pkl'.")
-
-    return modelo
-
-# Função para visualizar os dados e a importância das variáveis
-def visualizacao(dados, modelo):
-    # Distribuição das classes (falha x normal)
-    dados['falha'].value_counts().plot(kind='bar', title='Distribuição das Classes (Falha x Normal)', color=['green', 'red'])
-    plt.xlabel('Classe')
-    plt.ylabel('Contagem')
-    plt.show()
-
-    # Importância das variáveis
-    feature_importances = modelo.feature_importances_
-    plt.barh(['vibracao'], feature_importances, color='blue')
-    plt.xlabel('Importância')
-    plt.title('Importância das Variáveis')
-    plt.show()
-
-# Função principal para orquestrar todo o fluxo
-def main():
-    # Coleta de dados simulados
-    dados = simula_dados()
-
-    # Pré-processamento dos dados
-    X, y = preprocessamento(dados)
-
-    # Divisão entre dados de treinamento e teste
+    # Dividindo os dados para treinamento e teste
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Normalização dos dados
-    scaler = StandardScaler()
-    X_train = scaler.fit_transform(X_train)
-    X_test = scaler.transform(X_test)
+    # Treinando o modelo Random Forest
+    modelo = RandomForestClassifier(n_estimators=100, random_state=42)
+    modelo.fit(X_train, y_train)
 
-    # Treinamento do modelo
-    modelo = treinar_modelo(X_train, y_train, X_test, y_test)
+    # Avaliando o modelo
+    y_pred = modelo.predict(X_test)
+    print("\nDesempenho do modelo:")
+    print(classification_report(y_test, y_pred))
 
-    # Visualização
-    visualizacao(dados, modelo)
+    # Matriz de Confusão
+    cm = confusion_matrix(y_test, y_pred)
+    print("\nMatriz de Confusão:")
+    print(cm)
 
-    # Envio de dados simulados via MQTT
-    while True:
-        mensagem = coleta_dados()
-        client.publish(topic, mensagem)
-        print(f"Publicado: {mensagem}")
-        time.sleep(5)
+    # Salvando o modelo treinado
+    joblib.dump(modelo, 'modelo_vibracao.pkl')
+    print("✅ Modelo treinado e salvo com sucesso.")
 
-# Execução principal
-if __name__ == '__main__':
-    main()
+# Função para visualizar dados
+def visualizar_dados(dados):
+    df = pd.DataFrame(dados, columns=['vibracao', 'status'])
+    
+    # Histograma para visualizar a distribuição de vibração
+    plt.figure(figsize=(10, 6))
+    df['vibracao'].hist(bins=20, color='skyblue', edgecolor='black')
+    plt.title('Distribuição da Vibração')
+    plt.xlabel('Vibração (mm/s)')
+    plt.ylabel('Frequência')
+    plt.show()
+
+    # Gráfico de barras para visualizar status
+    plt.figure(figsize=(8, 5))
+    df['status'].value_counts().plot(kind='bar', color='lightcoral')
+    plt.title('Distribuição de Status (Falha/Normal)')
+    plt.xlabel('Status')
+    plt.ylabel('Contagem')
+    plt.xticks([0, 1], ['Normal', 'Falha'], rotation=0)
+    plt.show()
+
+# Callback para processamento de dados de vibração
+def on_message(client, userdata, msg):
+    # Recebe os dados do MQTT
+    dados = json.loads(msg.payload)
+    vibracao = dados['vibracao']
+    status = dados['status']
+    timestamp = dados['timestamp']
+    
+    # Exibe os dados recebidos
+    print(f"🔴 Dado recebido - Vibração: {vibracao}mm/s | Status: {'Falha' if status == 1 else 'Normal'} | Timestamp: {timestamp}")
+    
+    # Adiciona os dados em uma lista para análise
+    dados_armazenados.append([vibracao, status])
+
+    # Visualiza os dados de tempos em tempos
+    if len(dados_armazenados) % 100 == 0:
+        visualizar_dados(dados_armazenados)
+
+# Função principal para rodar a simulação
+def executar_simulacao():
+    # Inicializa a lista de dados simulados
+    dados_armazenados = []
+
+    # Configura o cliente MQTT
+    client.on_connect = on_connect
+    client.on_publish = on_publish
+    client.on_message = on_message
+
+    # Conecta ao broker MQTT
+    client.connect(broker, port)
+    client.loop_start()
+
+    # Inscreve-se no tópico para receber dados
+    client.subscribe(topic)
+
+    try:
+        while True:
+            # Gera dados simulados e publica
+            mensagem = gerar_dados()
+            client.publish(topic, mensagem)
+            print(f"📡 Publicado no tópico {topic}: {mensagem}")
+            time.sleep(5)  # Aguarda 5 segundos antes de enviar novamente
+            
+    except KeyboardInterrupt:
+        print("Simulação encerrada manualmente.")
+        client.loop_stop()
+
+# Rodando a simulação e treinando o modelo
+if __name__ == "__main__":
+    executar_simulacao()
+    # Após coletar dados suficientes, treina o modelo
+    if len(dados_armazenados) > 100:
+        treinar_modelo(dados_armazenados)
+
