@@ -43,8 +43,6 @@ A solução vai ajudar na manutenção preditiva, prevendo falhas antes que se t
 ## 🧱 Arquitetura da Solução
 A arquitetura proposta é composta por vários componentes interconectados que permitem a coleta, transmissão, armazenamento, processamento e visualização dos dados de vibração. Abaixo, encontra-se o diagrama da arquitetura:
 
-![Diagrama da Arquitetura da Solução](diagrama_arquitetura_sistema.png)
-
 **Componentes da Arquitetura**:
 - **ESP32 + Sensor de Vibração**: Coleta e transmite dados de vibração dos motores.
 - **MQTT**: Protocolo de comunicação para enviar os dados para o servidor.
