@@ -15,9 +15,14 @@ Na Indústria 4.0, falhas inesperadas em motores industriais são uma das princi
 A antecipação de falhas é crucial para melhorar a eficiência e reduzir custos. Utilizando sensores de vibração e análise preditiva, é possível identificar sinais de falhas antes que ocorram, permitindo a implementação de manutenção preditiva. Isso aumenta a vida útil dos equipamentos, reduz a necessidade de manutenção corretiva e melhora a produtividade da fábrica.
 
 ## 💡 Descrição da Solução Proposta
-Este projeto propõe o desenvolvimento de uma solução digital para o monitoramento em tempo real de motores industriais, utilizando sensores de vibração conectados a um ESP32. Os dados coletados pelos sensores serão enviados para a nuvem, processados por modelos de Machine Learning (ML) e apresentados em dashboards com alertas inteligentes.
 
-A solução vai ajudar na manutenção preditiva, prevendo falhas antes que se tornem problemas graves, otimizando os processos e reduzindo custos com paradas inesperadas.
+Este projeto propõe o desenvolvimento de uma solução digital para o monitoramento em tempo real de motores industriais, utilizando sensores de vibração conectados a um ESP32. A solução envolve a coleta de dados dos sensores, que serão enviados para a nuvem via MQTT, processados por modelos de Machine Learning (ML) e apresentados em dashboards com alertas inteligentes.
+
+A partir dos dados coletados pelos sensores de vibração, será realizada uma análise preditiva para identificar potenciais falhas nos motores antes que se tornem problemas graves. Utilizando diferentes algoritmos de Machine Learning, cinco modelos preditivos serão desenvolvidos para prever o comportamento do sistema e identificar falhas, com base nas condições de operação dos motores.
+
+Além disso, a plataforma incluirá a visualização dos dados e dos resultados dos modelos preditivos em dashboards, permitindo que os operadores recebam alertas inteligentes sobre o estado dos motores e possam tomar ações corretivas antes que ocorram falhas críticas.
+
+Essa solução contribui para a manutenção preditiva, otimiza os processos e reduz os custos associados a paradas inesperadas, ao mesmo tempo em que melhora a eficiência operacional dos motores industriais. O uso de Machine Learning possibilita a previsão de falhas, garantindo que as intervenções sejam realizadas de forma mais assertiva e eficaz.
 
 ## 🧰 Tecnologias Utilizadas
 
