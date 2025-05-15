@@ -56,9 +56,13 @@ A arquitetura é composta pelos seguintes componentes principais:
 5. Análise Operacional: Engine de analytics lê dados do Timestream e Redshift, avalia condições e envia alertas.  
 6. Consumo: Usuários autenticados acessam dashboards em tempo real e relatórios históricos.
 
-**Diagramas:**  
-- Diagrama de Componentes  
-- Diagrama de Sequência  
+## Arquitetura da Solução
+
+### Diagramas
+
+![Diagrama de Componentes](assets/diagrama_componentes.jpg)  
+![Diagrama de Sequência](assets/diagrama_sequencia.jpeg)
+
 - Jornada de Uso - Exemplo “Metalúrgica X”  
 
 ---
