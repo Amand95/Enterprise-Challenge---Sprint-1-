@@ -59,9 +59,15 @@ A arquitetura é composta pelos seguintes componentes principais:
 ## Arquitetura da Solução
 
 ### Diagramas
+Diagrama de Componentes
 
-![Diagrama de Componentes](assets/diagrama_componentes.jpg)  
-![Diagrama de Sequência](assets/diagrama_sequencia.jpeg)
+![Diagrama de Componentes](https://github.com/Amand95/Enterprise-Challenge---Sprint-1-/blob/69dcd568507579f9df8045a997937ddebf108644/Diagrama%20de%20componentes.jpg)
+
+
+Diagrama de Sequência
+
+
+![Diagrama de Sequência](https://github.com/Amand95/Enterprise-Challenge---Sprint-1-/blob/69dcd568507579f9df8045a997937ddebf108644/Diagrama%20de%20Sequencia.jpeg)
 
 - Jornada de Uso - Exemplo “Metalúrgica X”  
 
